@@ -4,21 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ItemController extends Controller
 {
-    public function __construct()
-    {
-        // middleware: must be authenticated for all actions
-        $this->middleware('auth');
-    }
-
     public function index()
     {
-        // admin sees all items; regular user sees all too (or could be filtered)
-        $items = Item::latest()->paginate(10);
+        $items = Item::latest()->get();
         return view('items.index', compact('items'));
     }
 
@@ -29,31 +22,24 @@ class ItemController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'code' => 'required|unique:items,code|max:50',
-            'name' => 'required|max:191',
-            'description' => 'nullable',
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:items,code',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['code','name','description','quantity','price']);
-        $data['created_by'] = $request->user()->id;
-
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('items', 'public');
-            $data['image'] = $path;
+            $validated['image'] = $request->file('image')->store('items', 'public');
         }
 
-        Item::create($data);
+        $validated['created_by'] = Auth::id();
 
-        return redirect()->route('items.index')->with('success', 'Item created.');
-    }
+        Item::create($validated);
 
-    public function show(Item $item)
-    {
-        return view('items.show', compact('item'));
+        return redirect()->route('items.index')->with('success', 'Barang berhasil ditambahkan!');
     }
 
     public function edit(Item $item)
@@ -63,28 +49,25 @@ class ItemController extends Controller
 
     public function update(Request $request, Item $item)
     {
-        $request->validate([
-            'code' => 'required|unique:items,code,' . $item->id,
-            'name' => 'required|max:191',
+        $validated = $request->validate([
+            'code' => 'required|string|max:50|unique:items,code,' . $item->id,
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['code','name','description','quantity','price']);
-
         if ($request->hasFile('image')) {
-            // delete old if exists
             if ($item->image) {
                 Storage::disk('public')->delete($item->image);
             }
-            $path = $request->file('image')->store('items', 'public');
-            $data['image'] = $path;
+            $validated['image'] = $request->file('image')->store('items', 'public');
         }
 
-        $item->update($data);
+        $item->update($validated);
 
-        return redirect()->route('items.index')->with('success','Item updated.');
+        return redirect()->route('items.index')->with('success', 'Barang berhasil diperbarui!');
     }
 
     public function destroy(Item $item)
@@ -92,7 +75,9 @@ class ItemController extends Controller
         if ($item->image) {
             Storage::disk('public')->delete($item->image);
         }
+
         $item->delete();
-        return redirect()->route('items.index')->with('success','Item deleted.');
+
+        return redirect()->route('items.index')->with('success', 'Barang berhasil dihapus!');
     }
 }

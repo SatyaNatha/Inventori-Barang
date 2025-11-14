@@ -12,7 +12,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+                primary: '#2563eb', // biru modern
             },
         },
     },

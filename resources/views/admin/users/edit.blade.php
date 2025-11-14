@@ -1,35 +1,41 @@
 @extends('layouts.app')
-
-@section('title', 'Edit User')
-
 @section('content')
-<h1 class="text-2xl font-semibold mb-4">Edit User</h1>
 
-<form action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-4">
-    @csrf @method('PUT')
-    <div>
-        <label class="block font-semibold">Nama</label>
-        <input type="text" name="name" value="{{ old('name', $user->name) }}" class="w-full border rounded p-2" required>
+<h1 class="text-2xl font-semibold mb-4">Edit Pengguna</h1>
+
+<form action="{{ route('admin.users.update', $user) }}" method="POST" class="bg-white p-6 rounded shadow w-full max-w-lg">
+    @csrf
+    @method('PUT')
+
+    <div class="mb-4">
+        <label class="block text-gray-700">Nama</label>
+        <input type="text" name="name" class="border rounded w-full p-2" value="{{ old('name', $user->name) }}">
+        @error('name') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
-    <div>
-        <label class="block font-semibold">Email</label>
-        <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full border rounded p-2" required>
+
+    <div class="mb-4">
+        <label class="block text-gray-700">Email</label>
+        <input type="email" name="email" class="border rounded w-full p-2" value="{{ old('email', $user->email) }}">
+        @error('email') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
-    <div>
-        <label class="block font-semibold">Password (kosongkan jika tidak diubah)</label>
-        <input type="password" name="password" class="w-full border rounded p-2">
+
+    <div class="mb-4">
+        <label class="block text-gray-700">Password (kosongkan jika tidak diubah)</label>
+        <input type="password" name="password" class="border rounded w-full p-2">
+        <input type="password" name="password_confirmation" class="border rounded w-full p-2 mt-2" placeholder="Konfirmasi password">
+        @error('password') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
-    <div>
-        <label class="block font-semibold">Konfirmasi Password</label>
-        <input type="password" name="password_confirmation" class="w-full border rounded p-2">
-    </div>
-    <div>
-        <label class="block font-semibold">Role</label>
-        <select name="role" class="border rounded p-2 w-40">
-            <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-            <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+
+    <div class="mb-4">
+        <label class="block text-gray-700">Role</label>
+        <select name="role" class="border rounded w-full p-2">
+            <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
+            <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
         </select>
+        @error('role') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Update</button>
 </form>
+
 @endsection
